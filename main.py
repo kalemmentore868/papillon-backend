@@ -4,7 +4,7 @@ from flask_pymongo import PyMongo
 from bson.json_util import dumps
 from bson.objectid import ObjectId
 from flask import jsonify, request
-from models.fraction_template import Fraction_Template
+
 
 app = Flask(__name__)
 
@@ -15,42 +15,10 @@ app.config['MONGO_URI'] = uri
 
 mongo = PyMongo(app)
 
-print(mongo)
-
 
 @app.route('/')
 def home():
     return 'Hello, World!'
-
-
-@app.route('/get_fraction_question/<id>', methods=['GET'])
-def get_fraction_question(id):
-    # Query the MongoDB for the template with the provided id
-    question_template_data = mongo.db.questionTemplates.find_one(
-        {"_id": ObjectId(id)})
-
-    # If no document was found with the provided id, return an error message
-    if question_template_data is None:
-        return jsonify({"error": "No question template found with the provided id"}), 404
-
-    # If a document was found, check if the subject is "Fractions"
-    if question_template_data['subject'] == "Fractions":
-        # Remove the '_id' key from the dictionary
-        question_template_data_without_id = {
-            key: value for key, value in question_template_data.items() if key != '_id'}
-
-        # Create a Fraction_Template instance with the data from the document (excluding '_id')
-        fraction_template = Fraction_Template(
-            **question_template_data_without_id)
-
-        # Call the set_question_and_answer method
-        fraction_template.set_question_and_answer()
-
-        # Convert the updated Fraction_Template instance back to a dictionary
-        question_template_data = fraction_template.to_dict()
-
-    # Return the updated document data as JSON
-    return jsonify(question_template_data), 200
 
 
 @app.route('/add_question_template', methods=['POST'])
@@ -58,42 +26,103 @@ def add_question_template():
     _json = request.json
 
     # Pulling the fields from the JSON request body
-    media = _json['media']
-    subject = _json['subject']
-    question_id = _json['question_id']
-    description = _json['description']
-    difficulty = _json['difficulty']
-    topic = _json['topic']
-    subtopic = _json['subtopic']
-    question_type = _json['question_type']
-    answer = _json['answer']
-    csec_section = _json['csec_section']
-    hint = _json['hint']
     status = _json['status']
+    subject = _json['subject']
     name = _json['name']
-    question_text = _json['question_text']
+    description = _json['description']
+    cesc_section = _json['cesc_section']
+    objectives = _json.get('objectives', [])
+    format = _json.get('format', [])
+    text = _json['text']
+    type = _json.get('type', [])
+    difficulty = _json.get('difficulty', [])
+    images = _json['images']
+    options = _json.get('options', [])
+    formula = _json['formula']
+    hint = _json['hint']
+    video = _json['video']
+    written_solution = _json['written_solution']
 
     # validation omitted for brevity...
 
     mongo.db.questionTemplates.insert_many([{
-        'media': media,
-        'subject': subject,
-        'question_id': question_id,
-        'description': description,
-        'difficulty': difficulty,
-        'topic': topic,
-        'subtopic': subtopic,
-        'question_type': question_type,
-        'answer': answer,
-        'csec_section': csec_section,
-        'hint': hint,
         'status': status,
+        'subject': subject,
         'name': name,
-        'question_text': question_text
+        'description': description,
+        'cesc_section': cesc_section,
+        'objectives': objectives,
+        'format': format,
+        'text': text,
+        'type': type,
+        'difficulty': difficulty,
+        'images': images,
+        'options': options,
+        'formula': formula,
+        'hint': hint,
+        'video': video,
+        'written_solution': written_solution
     }])
 
     resp = jsonify('Question Template added successfully')
     return resp, 200
+
+
+@app.route('/get_question_templates', methods=['GET'])
+def get_question_templates():
+    templates = mongo.db.questionTemplates.find()
+
+    # Convert the cursor object to a list
+    templates_list = list(templates)
+
+    # Transform the ObjectId from BSON to string, so it can be serialized by json.dumps
+    for template in templates_list:
+        template["_id"] = str(template["_id"])
+
+    return jsonify(templates_list), 200
+
+
+@app.route('/get_question_template/<id>', methods=['GET'])
+def get_question_template(id):
+    try:
+        template = mongo.db.questionTemplates.find_one({"_id": ObjectId(id)})
+
+        # Check if the template was found
+        if template:
+            template["_id"] = str(template["_id"])
+            return jsonify(template), 200
+        else:
+            return jsonify({"error": "Template not found"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/edit_question_template/<id>', methods=['PUT'])
+def edit_question_template(id):
+    try:
+        _json = request.json
+        update_fields = {}
+
+        for key, value in _json.items():
+            update_fields[key] = value
+
+        mongo.db.questionTemplates.update_one(
+            {"_id": ObjectId(id)},
+            {"$set": update_fields}
+        )
+
+        return jsonify({"message": "Question Template updated successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/delete_question_template/<id>', methods=['DELETE'])
+def delete_question_template(id):
+    try:
+        mongo.db.questionTemplates.delete_one({"_id": ObjectId(id)})
+        return jsonify({"message": "Question Template deleted successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == '__main__':
