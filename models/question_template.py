@@ -4,7 +4,7 @@ class Question_Template:
         self.subject = subject
         self.name = name
         self.description = description
-        self.cesc_section = cesc_section
+        self.csec_section = cesc_section
         self.objectives = objectives
         self.format = format
         self.text = text
@@ -23,7 +23,7 @@ class Question_Template:
             "subject": self.subject,
             "name": self.name,
             "description": self.description,
-            "cesc_section": self.cesc_section,
+            "cesc_section": self.csec_section,
             "objectives": self.objectives,
             "format": self.format,
             "text": self.text,
@@ -44,7 +44,7 @@ class Question_Template:
             subject=data.get("subject"),
             name=data.get("name"),
             description=data.get("description"),
-            cesc_section=data.get("cesc_section"),
+            cesc_section=data.get("csec_section"),
             objectives=data.get("objectives"),
             format=data.get("format"),
             text=data.get("text"),

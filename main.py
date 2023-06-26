@@ -4,9 +4,11 @@ from flask_pymongo import PyMongo
 from bson.json_util import dumps
 from bson.objectid import ObjectId
 from flask import jsonify, request
+from flask_cors import CORS
 
 
 app = Flask(__name__)
+CORS(app, origins="*")
 
 
 uri = "mongodb+srv://kalemmentore868:ZFVtYKgUGLOtriXq@cluster0.p622hsk.mongodb.net/dev?retryWrites=true&w=majority&tlsAllowInvalidCertificates=true"
@@ -30,7 +32,7 @@ def add_question_template():
     subject = _json['subject']
     name = _json['name']
     description = _json['description']
-    cesc_section = _json['cesc_section']
+    cesc_section = _json['csec_section']
     objectives = _json.get('objectives', [])
     format = _json.get('format', [])
     text = _json['text']
