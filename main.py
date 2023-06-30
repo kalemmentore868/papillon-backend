@@ -1,10 +1,22 @@
 
+import cloudinary.uploader
 from flask import Flask
 from flask_pymongo import PyMongo
 from bson.json_util import dumps
 from bson.objectid import ObjectId
 from flask import jsonify, request
 from flask_cors import CORS
+import os
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
+cloudinary.config(cloud_name="dbpnbpuel",
+                  api_key="642281228538782",
+                  api_secret=os.getenv('CLOUDY_SECRET'),
+                  )
 
 
 app = Flask(__name__)
@@ -25,46 +37,22 @@ def home():
 
 @app.route('/add_question_template', methods=['POST'])
 def add_question_template():
-    _json = request.json
+    print(request.files)
+    img_file = request.files['image']
+    written_solution_file = request.files['written_solution']
+
+    upload_data_image = cloudinary.uploader.upload(img_file)
+    upload_data_written_solution = cloudinary.uploader.upload(
+        written_solution_file)
 
     # Pulling the fields from the JSON request body
-    status = _json['status']
-    subject = _json['subject']
-    name = _json['name']
-    description = _json['description']
-    cesc_section = _json['csec_section']
-    objectives = _json.get('objectives', [])
-    format = _json.get('format', [])
-    text = _json['text']
-    type = _json.get('type', [])
-    difficulty = _json.get('difficulty', [])
-    images = _json['images']
-    options = _json.get('options', [])
-    formula = _json['formula']
-    hint = _json['hint']
-    video = _json['video']
-    written_solution = _json['written_solution']
+    data = {key: request.form[key] for key in request.form}
+    data['image'] = upload_data_image['url']
+    data['written_solution'] = upload_data_written_solution['url']
 
     # validation omitted for brevity...
 
-    mongo.db.questionTemplates.insert_many([{
-        'status': status,
-        'subject': subject,
-        'name': name,
-        'description': description,
-        'cesc_section': cesc_section,
-        'objectives': objectives,
-        'format': format,
-        'text': text,
-        'type': type,
-        'difficulty': difficulty,
-        'images': images,
-        'options': options,
-        'formula': formula,
-        'hint': hint,
-        'video': video,
-        'written_solution': written_solution
-    }])
+    mongo.db.questionTemplates.insert_one(data)
 
     resp = jsonify('Question Template added successfully')
     return resp, 200

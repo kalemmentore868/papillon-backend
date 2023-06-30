@@ -1,5 +1,5 @@
 class Question_Template:
-    def __init__(self, status, subject, name, description, cesc_section, objectives, format, text, type, difficulty, images, options, formula, hint, video, written_solution):
+    def __init__(self, status, subject, name, description, cesc_section, objectives, format, text, type, difficulty, image, options, formula, hint, video, written_solution):
         self.status = status
         self.subject = subject
         self.name = name
@@ -10,7 +10,7 @@ class Question_Template:
         self.text = text
         self.type = type
         self.difficulty = difficulty
-        self.images = images
+        self.image = image
         self.options = options
         self.formula = formula
         self.hint = hint
@@ -29,7 +29,7 @@ class Question_Template:
             "text": self.text,
             "type": self.type,
             "difficulty": self.difficulty,
-            "images": self.images,
+            "image": self.image,
             "options": self.options,
             "formula": self.formula,
             "hint": self.hint,
@@ -50,7 +50,7 @@ class Question_Template:
             text=data.get("text"),
             type=data.get("type"),
             difficulty=data.get("difficulty"),
-            images=data.get("images"),
+            image=data.get("image"),
             options=data.get("options"),
             formula=data.get("formula"),
             hint=data.get("hint"),
