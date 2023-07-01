@@ -14,3 +14,4 @@ python-dotenv
 six
 urllib3
 Werkzeug
+gunicorn
